@@ -1,8 +1,20 @@
 #!/bin/bash
-# docker compose automate
+# synology docker project rebuild
 # 2025-10-07 rjadams82
-# clean, re-pull, re-build by calling this from cron or running manually etc
+# clean,  re-build by calling this from cron or running manually etc
 #
+
+# rewriting with synowebapi calls 
+# synowebapi --exec api=SYNO.Docker.Project version=1 method=list
+
+synowebapi --exec api=SYNO.Docker.Project version=1 method=list | jq -rc '.data[] | { id: .id, name: .name, status: .status }'
+method=get id=
+method=clean_stream id=
+method=build_stream id=
+
+synowebapi --exec api=SYNO.Docker.Project version=1 method=list | jq -rc '.data[] | { id: .id, name: .name, status: .status }'
+synowebapi --exec api=SYNO.Docker.Project version=1 method=list | jq -rc '.data[] | { id: .id, name: .name, status: .status } | select(.status=="RUNNING")'
+
 # error handling
 #set -x # full xtrace output
 set -o errtrace
@@ -23,10 +35,15 @@ log_it() {
     /usr/bin/logger --id=$$ -t "${logtag}" -p "${priority}" -- "${message}"
 }
 
-echo "Gathering Docker Compose projects..."
-composeprojects=$(docker compose ls --format json)
+
+
+echo "Gathering Docker projects..."
+projects=$(docker compose ls --format json)
+
 projects=$(echo $composeprojects | grep -o '"Name":"[^"]*' | grep -o '[^"]*$')
 projectsyaml=$(echo $composeprojects | grep -o '"ConfigFiles":"[^"]*' | grep -o '[^"]*$')
+
+
 # check for output
 if [ -z "$projects" ]; then
     echo "No Docker Compose projects found. Exiting."
