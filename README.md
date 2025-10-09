@@ -12,9 +12,9 @@ This is an attempt at a hands-off method to handle rebuilding any running projec
 
 ### How it works
 
-Synology uses an API to handle the administration of most tasks on a diskstation. We can utilize the ==synowebapi== binary on the local Synology system to feed requests to the Synology API.
+Synology uses an API to handle the administration of most tasks on a diskstation. We can utilize the **synowebapi** binary on the local Synology system to feed requests to the Synology API.
 
-The ==SYNO.Docker.Project== API namespace allows us to start(up) and stop(down) Projects as well as clean (container/volume/network removal) and build (container/volume/network creation) Projects from the defined Project yaml file.
+The **SYNO.Docker.Project** API namespace allows us to start(up) and stop(down) Projects as well as clean (container/volume/network removal) and build (container/volume/network creation) Projects from the defined Project yaml file.
 
 We use a simple bash script and the Synology API to perform actions on the Synology Container Manager Projects available on the target Synology system.
 
