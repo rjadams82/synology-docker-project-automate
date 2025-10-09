@@ -20,8 +20,8 @@ We use a simple bash script and the Synology API to perform actions on the Synol
 
 1. Call the API to get a list of Projects in the "RUNNING" state
 2. Iterate through the list of Projects, obtain the id of each project and 
-    a. execute the 'clean_stream' method to bring the Projecct down
-    b. execute the 'build_stream' method to bring the Project back up
+    - execute the 'clean_stream' method to bring the Projecct down
+    - execute the 'build_stream' method to bring the Project back up
 3. Logs each action to the system log
 
 
