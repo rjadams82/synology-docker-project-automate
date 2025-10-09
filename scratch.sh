@@ -28,8 +28,8 @@ synowebapi --exec api=SYNO.Docker.Project version=1 method=build_stream 'id=""'
 synowebapi --exec api=SYNO.Docker.Project version=1 method=build_stream id=\"${project_id}\"
 
 # check docker images
-synowebapi --exec api=SYNO.Docker.Image version=1 method=list limit=-1 offset=0 show_dsm=false | jq '.data.images[] | { repo: .repository, tags: .tags, upgradable: .upgradable}'
-synowebapi --exec api=SYNO.Docker.Image version=1 method=list limit=-1 offset=0 show_dsm=false | jq '.data.images[] | select(.upgradable==true and .tags[]=="latest") | { repo: .repository, tags: .tags, upgradable: .upgradable}'
+synowebapi --exec api=SYNO.Docker.Image version=1 method=list limit=-1 offset=0 show_dsm=false | jq -rc '.data.images[] | { repo: .repository, tags: .tags, upgradable: .upgradable}'
+synowebapi --exec api=SYNO.Docker.Image version=1 method=list limit=-1 offset=0 show_dsm=false | jq -rc '.data.images[] | select(.upgradable==true and .tags[]=="latest") | { repo: .repository, tags: .tags, upgradable: .upgradable}'
 
 # upgrade image
 api=SYNO.Docker.Image version=1 method=upgrade_start repository=%22linuxserver%2Funifi-network-application%22
