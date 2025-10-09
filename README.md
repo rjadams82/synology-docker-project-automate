@@ -3,30 +3,36 @@
 
 > These scripts are under development. If you accept the risk you can use the script to evaluate your results. Feedback is welcome. 
 
-## What this is for
-Synology Container Manager (docker) "Projects" are used to maintain docker compose-like applications on the Synology diskstation platform. Projects use a yaml file (compose format) to define a collection of containers/volumes/networks. Projects work just like compose and building a project brings up all objects defined in the yaml.
+![DSM Container Manager](assets/dsm_container_projects.png)
 
-When docker image maintainers update or release new versions in the docker repository it requires a manual clean of the Project, a pull of the latest image (update in the webui) and re-build of the Project. As far as I can tell there are no notifications for image updates.
+## What this is for
+Synology Container Manager (docker) "Projects" are used to maintain docker compose-like applications on the Synology diskstation platform. Projects use a yaml file (compose format) to define a collection of containers/volumes/networks. Projects work just like Portainer Stacks, using docker compose, and building a Project brings up all objects defined in the yaml.
+
+![DSM Project YAML](assets/dsm_project_yaml.png)
+
+When docker image maintainers update or release new versions in the docker repository, and you would like to update your containers to the new image, it requires a manual clean of the Project, a pull of the latest image (image update in the webui) and re-build of the Project. As far as I can tell there are no notifications for image updates, and no way to automatically get these pulled down within the Synology Container Manager.
+
+![DSM CM Image Update](assets/dsm_image_update.png)
 
 This is an attempt at a hands-off method to handle rebuilding any running projects with the latest available image.
 
 ## How it works
 
-Synology uses an API to handle the administration of most tasks on a diskstation. We can utilize the **synowebapi** binary on the local Synology system to feed requests to the Synology API.
+As luck would have it Synology uses an API to handle the administration of most tasks on a diskstation. We can utilize the `synowebapi` binary utility on the local Synology system to feed requests to the Synology API.
 
 The **SYNO.Docker.Project** API namespace allows us to start(up) and stop(down) Projects as well as clean (container/volume/network removal) and build (container/volume/network creation) Projects from the defined Project yaml file.
 
 We use a simple bash script and the Synology API to perform actions on the Synology Container Manager Projects available on the target Synology system.
 
 1. Call the API to get a list of Projects in the "RUNNING" state
-2. Iterate through the list of Projects, obtain the id of each project and 
+2. Iterate through the list of Projects, obtain the id of each Project and 
     - execute the 'clean_stream' method to bring the Project down
     - execute the 'prune' method to remove unused images
     - execute the 'build_stream' method to pull images and bring the Project back up
 3. Logs each action to the system log
 
 
-**Why not use portainer/watchtower/diun/whatsupdocker/dockcheck/etc ?**
+### ***Why not use portainer/watchtower/diun/whatsupdocker/dockcheck/etc ?***
 
 Native docker management/update tools engage directly with dockerd to manage compose, containers, images, volumes etc.
 
@@ -63,8 +69,26 @@ If you just want to test the script, or need to debug, use this option.
 
 The intended (easiest) way to use this tool is to create a scheduled task in DSM Control Panel, set the schedule to something appropriate (monthly/weekly/daily), choosing a time that is least impactful and paste the entire script contents into the task settings. The task needs to be run as the root user, or the API calls may fail.
 
-![DSM task scheduler](/assets/dsm_tasks.png)
+>![DSM task example](assets/dsm_tasks.png)
+>![DSM task scheduler](assets/dsm_task_settings.png)
+
+## Troubleshooting
 
 ### Check logs
 
-`journalctl -t docker-project-rebuild`
+Use the systemd journal command to inspect the log entries from this script.  
+`sudo journalctl -t docker-project-rebuild` 
+
+You will need to do this with sudo, journal does not seem to show system log from a standard user account. The journal does rotate frequently so you may not catch all entries. 
+
+If you run the script from a task, and enable "Send run details by email" you should get the full script output for review. Otherwise, advanced logging is not included in this script so you may need to get creative.
+
+### Manual API Calls
+
+If you are not getting the expected results you can always make manual API calls to see what the output is. Synology API seems RESTful and there are some KB explaining how to use. See:
+
+https://kb.synology.com/en-us/DG/DSM_Login_Web_API_Guide/1
+
+However they don't seem to publish the Container Manager API information. So I have noted some common API syntax for Container Manager (scratch.sh) or you can use the DSM WebUI in your favorite browser and inspect the calls when you click buttons in the WebUI to see what the browser is sending back to DSM.
+
+Now, the KB above and your browser debug is using web API calls to `synology_device/webapi/entry.cgi`. But in this script I am interacting with the API ***locally*** from the Synology system shell using the `synowebapi` utility, which does not require authentication and uses [command][argument] syntax so keep that in mind when debugging.
