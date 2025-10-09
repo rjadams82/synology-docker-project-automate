@@ -1,7 +1,9 @@
 # synology-docker-project-automate
 ### Automating Synology Container Manager Projects
 
-> These scripts are under development. If you accept the risk you can use the script to evaluate your results. Feedback is welcome. 
+> These scripts are under development. If you accept the risk you can use the script to evaluate your results. Feedback is welcome.
+
+>### Please read this entire doc for all details and warnings. Always make backups and test before putting custom scripts into production! 
 
 ![DSM Container Manager](assets/dsm_container_projects.png)
 
@@ -31,6 +33,11 @@ We use a simple bash script and the Synology API to perform actions on the Synol
     - execute the 'build_stream' method to pull images and bring the Project back up
 3. Logs each action to the system log
 
+# WARNING - WARNING - WARNING
+
+>I am NOT chekcing to see if an image is upgradable before removing the image! This means we are removing and re-pulling images every time, regardless of their current status in the docker repo - ***and regardless if they even exist anymore***! This means you might remove your containers and images completely and never get them back! 
+
+*You could in theory use the API to iterate through the Project > Containers > Images to see if they are upgradeable before cleaning them and rebuilding, and I might investigate this in future updates.*
 
 ### ***Why not use portainer/watchtower/diun/whatsupdocker/dockcheck/etc ?***
 
@@ -99,11 +106,17 @@ The API does return results in JSON format so I make use of the handy `jq` comma
 
 #### Some common commands:
 
-*List all running projects*
+*List all projects*
 ```
 synowebapi --exec api=SYNO.Docker.Project version=1 method=list | jq -rc '.data[] | { id: .id, name: .name, status: .status }'
 ```
 ![DSM synowebapi example](assets/dsm_synowebapi.png)
+
+*List all containers*
+```
+synowebapi --exec api=SYNO.Docker.Container version=1 method=list limit=-1 offset=0 | jq -rc '.data.containers[]|{name: .name, id: .id, status: .status, image: .Image, imageid: .ImageID}'
+```
+![DSM synowebapi example](assets/dsm_synowebapi_containers.png)
 
 *List all images*
 ```
