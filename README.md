@@ -63,3 +63,6 @@ If you just want to test the script, or need to debug, use this option.
 The intended (easiest) way to use this tool is to create a scheduled task in DSM Control Panel, set the schedule to something appropriate (monthly/weekly/daily), choosing a time that is least impactful and paste the entire script contents into the task settings. The task needs to be run as the root user, or the API calls may fail.
 
 
+### Check logs
+
+`journalctl -t docker-project-rebuild`
