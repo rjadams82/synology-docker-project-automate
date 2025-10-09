@@ -10,7 +10,7 @@ When docker image maintainers update or release new versions in the docker repos
 
 This is an attempt at a hands-off method to handle rebuilding any running projects with the latest available image.
 
-### How it works
+## How it works
 
 Synology uses an API to handle the administration of most tasks on a diskstation. We can utilize the **synowebapi** binary on the local Synology system to feed requests to the Synology API.
 
