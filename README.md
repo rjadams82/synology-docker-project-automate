@@ -40,9 +40,6 @@ Synology wraps dockerd in their Container Manager and includes a Projects module
 
 This means that if you use ''#>docker compose '' commands on a Synology Diskstation, the docker container, volumes, network WILL build/start/run fine, but the "Projects" module will not be aware, and the Web Station portal may not be aware of the docker applications and/or map/connect the ports required.
 
-
-*Note: *
-
 ## Use this tool
 *script is under development. run at your own risk.*
 
@@ -79,9 +76,14 @@ The intended (easiest) way to use this tool is to create a scheduled task in DSM
 Use the systemd journal command to inspect the log entries from this script.  
 `sudo journalctl -t docker-project-rebuild` 
 
-You will need to do this with sudo, journal does not seem to show system log from a standard user account. The journal does rotate frequently so you may not catch all entries. 
+>You will need to do this with sudo, journal does not seem to show system log from a standard user account. The journal does rotate frequently so you may not catch all entries. 
 
-If you run the script from a task, and enable "Send run details by email" you should get the full script output for review. Otherwise, advanced logging is not included in this script so you may need to get creative.
+**More logging options:**
+- If you run the script manually by calling it in the shell, you should see all output from STDIN direclty in the shell terminal.
+
+- If you run the script from a task, and enable "Send run details by email" you should get the full script output in an email for review once the task finishes.
+
+- If you enable "Save output results" in your DSM Task Scheduler you will have logfiles generated on your system that you can manually review.
 
 ### Manual API Calls
 
@@ -92,3 +94,19 @@ https://kb.synology.com/en-us/DG/DSM_Login_Web_API_Guide/1
 However they don't seem to publish the Container Manager API information. So I have noted some common API syntax for Container Manager (scratch.sh) or you can use the DSM WebUI in your favorite browser and inspect the calls when you click buttons in the WebUI to see what the browser is sending back to DSM.
 
 Now, the KB above and your browser debug is using web API calls to `synology_device/webapi/entry.cgi`. But in this script I am interacting with the API ***locally*** from the Synology system shell using the `synowebapi` utility, which does not require authentication and uses [command][argument] syntax so keep that in mind when debugging.
+
+The API does return results in JSON format so I make use of the handy `jq` command to parse the results. Besides making JSON readable you can filter and format the output as needed.
+
+#### Some common commands:
+
+*List all running projects*
+```
+synowebapi --exec api=SYNO.Docker.Project version=1 method=list | jq -rc '.data[] | { id: .id, name: .name, status: .status }'
+```
+![DSM synowebapi example](assets/dsm_synowebapi.png)
+
+*List all images*
+```
+synowebapi --exec api=SYNO.Docker.Image version=1 method=list limit=-1 offset=0 show_dsm=false | jq -rc '.data.images[] | { repo: .repository, tags: .tags, upgradable: .upgradable}'
+```
+![DSM synowebapi example](assets/dsm_synowebapi_images.png)
