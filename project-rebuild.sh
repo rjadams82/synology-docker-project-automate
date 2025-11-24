@@ -1,6 +1,6 @@
 #!/bin/bash
 # synology docker project rebuild
-# 2025-10-07 rjadams82
+# 2025-11-24 
 # take projects down/clean, re-build
 # call this from cron or run manually etc
 #
@@ -13,23 +13,28 @@ handle_error() {
 }
 trap 'handle_error $LINENO $?' ERR
 #
-logtag="docker-project-rebuild"
+logtag="synoProjectRebuild:"
 # logger function
 log_it() {
     local priority="$1"
     local message="$2"
     # output to STDIN
     echo ${message}
-    # log to journal    
-    /usr/bin/logger --id=$$ -t "${logtag}" -p "${priority}" -- "${message}"
+    # log to journal - doesnt show in logcenter on synology 
+    #/usr/bin/logger --id=$$ -t "${logtag}" -p "${priority}" -- "${message}"
+    # syno logger - this logs to logcenter
+    /usr/syno/bin/synologset1 sys "$priority" 0x11100000 "$logtag: $message"
 }
+
+log_it "info" "script started"
+
 # call api to get list of running projects
 echo "Searching running Docker projects..."
 readarray -t projects < <(synowebapi --exec api=SYNO.Docker.Project version=1 method=list | jq -rc '.data[] | select(.status=="RUNNING")| { id: .id, name: .name, status: .status }')
 # check for output
 if [ -z "$projects" ]; then
     echo "No Docker projects found. Exiting."
-    log_it "user.notice" "No running Syno Docker projects found. Exiting."
+    log_it "warn" "No running Docker projects found. Exiting."
     exit 0
 fi
 # loop through projects
@@ -41,18 +46,19 @@ for project in "${projects[@]}"; do
 
     echo "Clean project:$project_name ID:$project_id"    
     synowebapi --exec api=SYNO.Docker.Project version=1 method=clean_stream id=\"${project_id}\"
-    log_it "user.notice" "Project $project_name down and cleaned"
+    log_it "info" "Project $project_name down and cleaned"
     #sleep 15
 
     echo "Remove unused images"
     synowebapi --exec api=SYNO.Docker.Image version=1 method=prune
-    log_it "user.notice" "Unused images removed"
+    log_it "info" "Unused images removed"
     #sleep 15
 
     echo "Build project:$project_name ID:$project_id"
     synowebapi --exec api=SYNO.Docker.Project version=1 method=build_stream id=\"${project_id}\"
-    log_it "user.notice" "Project $project_name built and started"
+    log_it "info" "Project $project_name built and started"
     #sleep 5
 done
 echo "All project builds complete"
+log_it "info" "script completed"
 exit 0
