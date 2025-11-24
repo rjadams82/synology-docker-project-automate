@@ -13,7 +13,7 @@ handle_error() {
 }
 trap 'handle_error $LINENO $?' ERR
 #
-logtag="synoProjectRebuild:"
+logtag="synoProjectRebuild"
 # logger function
 log_it() {
     local priority="$1"
