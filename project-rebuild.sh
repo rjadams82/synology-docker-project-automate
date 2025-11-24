@@ -47,17 +47,17 @@ for project in "${projects[@]}"; do
     echo "Clean project:$project_name ID:$project_id"    
     synowebapi --exec api=SYNO.Docker.Project version=1 method=clean_stream id=\"${project_id}\"
     log_it "info" "Project $project_name down and cleaned"
-    #sleep 15
+    sleep 15
 
     echo "Remove unused images"
     synowebapi --exec api=SYNO.Docker.Image version=1 method=prune
     log_it "info" "Unused images removed"
-    #sleep 15
+    sleep 15
 
     echo "Build project:$project_name ID:$project_id"
     synowebapi --exec api=SYNO.Docker.Project version=1 method=build_stream id=\"${project_id}\"
     log_it "info" "Project $project_name built and started"
-    #sleep 5
+    sleep 5
 done
 echo "All project builds complete"
 log_it "info" "script completed"

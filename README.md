@@ -35,7 +35,7 @@ We use a simple bash script and the Synology API to perform actions on the Synol
 
 # WARNING - WARNING - WARNING
 
->I am NOT chekcing to see if an image is upgradable before removing the image! This means we are removing and re-pulling images every time, regardless of their current status in the docker repo - ***and regardless if they even exist anymore***! This means you might remove your containers and images completely and never get them back! 
+>I am NOT checking to see if an image is upgradable before removing the image! This means we are removing and re-pulling images every time, regardless of their current status in the docker repo - ***and regardless if they even exist anymore***! This means you might remove your containers and images completely and never get them back! 
 
 *You could in theory use the API to iterate through the Project > Containers > Images to see if they are upgradeable before cleaning them and rebuilding, and I might investigate this in future updates.*
 
@@ -80,10 +80,10 @@ The intended (easiest) way to use this tool is to create a scheduled task in DSM
 
 ### Check logs
 
-Use the systemd journal command to inspect the log entries from this script.  
-`sudo journalctl -t docker-project-rebuild` 
+~~Use the systemd journal command to inspect the log entries from this script.  
+`sudo journalctl -t docker-project-rebuild`~~
 
->You will need to do this with sudo, journal does not seem to show system log from a standard user account. The journal does rotate frequently so you may not catch all entries. 
+Script has been updated with the correct binary for logging to Synology Log Center. Each script step will log to Log Center. All log entries are prefixed with "*synoProjectRebuild*"
 
 **More logging options:**
 - If you run the script manually by calling it in the shell, you should see all output from STDIN direclty in the shell terminal.
